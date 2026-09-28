@@ -1,8 +1,35 @@
 # AI辅助编程实录
-本次任务：生词表CSV自动生成练习题
+## 1. 任务与提示词
+要做什么：读取生词表CSV，挑出HSK4级词语，统计词性，生成造句练习题
+我写的提示词：
+>写Python代码读取csv生词表，筛选HSK4词汇，统计每种词性数量，输出txt造句题，格式：用“词语”造一个句子。（词性）
 
-修改记录：
-1. AI生成的初始代码自带try-except异常捕获，课堂PPT不允许使用这类高级语法，我删除了异常捕获代码，只保留基础读写，贴合课堂手写骨架。
-2. AI直接使用数字判断HSK等级`==4`，但csv读取出来的内容是字符串，会匹配失败。我修改为`str(w["HSK等级"])`，统一类型，解决匹配bug。
-3. AI写死输出文件名为"练习.txt"，不使用weekpath路径工具。替换成`weekpath.root_path("练习.txt")`，保证代码在任意目录运行都能正确保存文件。
-4. 作业1学习修改：精读Python官方教程字典章节，学习dict.get()写法。将该写法应用到count_by_pos词性统计函数，省去if‑else判断，简化代码逻辑；程序读取老师下发的生词表.csv，对《愚公移山》课文词汇做词性统计。
+## 2. AI 初版代码
+```python
+import csv
+def load_words(path):
+    with open(path) as f:
+        return list(csv.DictReader(f))
+
+def filter_by_level(words, level=4):
+    return [w for w in words if w["HSK等级"] == level]
+
+def count_by_pos(words):
+    d = {}
+    for w in words:
+        if w["词性"] in d:
+            d[w["词性"]] +=1
+        else:
+            d[w["词性"]] =1
+    return d
+
+def gen_exercises(words, out_path):
+    with open(out_path,"w") as f:
+        for w in words:
+            f.write(f"用\"{w['词汇']}\"造一个句子。（{w['词性']}）\n")
+
+if __name__ == "__main__":
+    words = load_words("生词表.csv")
+    lv4 = filter_by_level(words,4)
+    print(count_by_pos(lv4))
+    gen_exercises(lv4,"练习.txt")
